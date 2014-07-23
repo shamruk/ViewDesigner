@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:containers="spark.containers.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="1200" height="800">
+	<s:states>
+		<s:State name="project"/>
+		<s:State name="elements"/>
+	</s:states>
+	<s:layout>
+		<s:HorizontalLayout/>
+	</s:layout>
+	<containers:Accordion width="300" height="100%"
+						  change="currentState = event.newIndex == 0 ? 'project' : 'elements'">
+		<s:Panel name="Projects">
+			<s:layout>
+				<s:VerticalLayout/>
+			</s:layout>
+			<s:List dataProvider="{projects}" width="100%" height="100%" labelField="name"
+					change="project = List(event.target).selectedItem"/>
+			<s:HGroup>
+				<s:Button label="+" click="projects.addItem(new Project())"/>
+				<s:Button label="-"/>
+			</s:HGroup>
+		</s:Panel>
+		<s:Panel name="Elements">
+			<mx:Tree width="100%" height="100%"/>
+		</s:Panel>
+		<s:Panel name="Images">
+			<s:layout><s:VerticalLayout/></s:layout>
+			<mx:FileSystemTree directory="{new File(project.imagePath)}"
+							   change="selectedImageURL = new File(FileSystemTree(event.currentTarget).selectedPath).url"
+							   width="100%" height="100%"/>
+			<s:Image width="200" height="200" source="{selectedImageURL}" dragEnter="DragManager.acceptDragDrop(Image(event.currentTarget));"/>
+			<s:Label text="{selectedImageRelatedURL}"/>
+		</s:Panel>
+		<s:Panel name="Properties">
+
+		</s:Panel>
+	</containers:Accordion>
+	<s:VGroup includeIn="project" visible="{project}">
+		<s:TextInput prompt="name" text="{project.name}" focusOut="project.name = TextInput(event.currentTarget).text; saveProjects()"/>
+		<s:HGroup>
+			<s:TextInput prompt="images path" text="{project.imagePath}" editable="false"/>
+			<s:Button click="browserPath(function(file:File):void{ project.imagePath = file.url; saveProjects(); })"/>
+		</s:HGroup>
+		<s:HGroup>
+			<s:TextInput prompt="vd data path" text="{project.dataPath}" editable="false"/>
+			<s:Button click="browserPath(function(file:File):void{ project.dataPath = file.url; saveProjects(); })"/>
+		</s:HGroup>
+	</s:VGroup>
+	<s:HGroup includeIn="elements">
+		<s:Group/>
+		<s:TextArea  width="50%" height="100%"/>
+	</s:HGroup>
+	<fx:Script><![CDATA[
+		import mx.collections.ArrayCollection;
+		import mx.collections.IList;
+		import mx.controls.FileSystemTree;
+		import mx.managers.DragManager;
+
+		[Bindable]
+		public var projects : IList = getProjects();
+		[Bindable]
+		public var project : Project;
+
+		private function getProjects() : IList {
+			var local : SharedObject = SharedObject.getLocal("vd.projects");
+			var list : ArrayCollection = new ArrayCollection();
+			for each(var projectData : Object in local.data) {
+				var project : Project = new Project();
+				project.name = projectData.name;
+				project.imagePath = projectData.imagePath;
+				project.dataPath = projectData.dataPath;
+				list.addItem(project);
+			}
+			return list;
+		}
+
+		private function saveProjects() : void {
+			var local : SharedObject = SharedObject.getLocal("vd.projects");
+			for each(var project : Project in projects) {
+				local.data[project.name] = JSON.parse(JSON.stringify(project));
+			}
+			local.flush();
+		}
+
+		private function browserPath(callback : Function) : void {
+			var file : File = new File();
+			file.browseForDirectory('select path')
+			file.addEventListener(Event.SELECT, function (event : Event) : void {
+				var directoryListing : Array = file.getDirectoryListing();
+				callback(directoryListing.length == 1 ? directoryListing[0] : directoryListing[0].parent);
+			});
+		}
+
+		[Bindable]
+		public var selectedImageRelatedURL : String;
+		private var _selectedImageURL : String;
+
+		[Bindable]
+		public function get selectedImageURL() : String {
+			return _selectedImageURL;
+		}
+
+		public function set selectedImageURL(value : String) : void {
+			_selectedImageURL = value;
+			selectedImageRelatedURL = new File(project.imagePath).getRelativePath(new File(value));
+		}
+		]]></fx:Script>
+</s:WindowedApplication>

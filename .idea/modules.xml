@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Example/Example.iml" filepath="$PROJECT_DIR$/Example/Example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VD.Editor/VD.Editor.iml" filepath="$PROJECT_DIR$/VD.Editor/VD.Editor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VD.Visualizer/VD.Visualizer.iml" filepath="$PROJECT_DIR$/VD.Visualizer/VD.Visualizer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ViewDesigner.iml" filepath="$PROJECT_DIR$/.idea/ViewDesigner.iml" />
+    </modules>
+  </component>
+</project>
+
